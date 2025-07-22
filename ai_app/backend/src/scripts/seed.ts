@@ -33,6 +33,6 @@ async function runSeeds(): Promise<void> {
 }
 
 runSeeds().catch((error) => {
-  console.error('Seeding failed:', error);
+  logger.error('Seeding failed:', error);
   process.exit(1);
 });

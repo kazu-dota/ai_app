@@ -58,20 +58,26 @@ export interface AIApp {
   url?: string;
   api_endpoint?: string;
   api_key?: string;
-  tech_stack?: Record<string, any>;
+  tech_stack?: Record<string, unknown>;
   usage_guide?: string;
   input_example?: string;
   output_example?: string;
   model_info?: string;
   environment?: string;
   usage_count: number;
-  avg_rating?: number;
+  avg_rating?: number | null;
   is_public: boolean;
   created_at: Date;
   updated_at: Date;
 }
 
-export type AppStatus = 'development' | 'testing' | 'active' | 'maintenance' | 'deprecated' | 'archived';
+export type AppStatus =
+  | 'development'
+  | 'testing'
+  | 'active'
+  | 'maintenance'
+  | 'deprecated'
+  | 'archived';
 
 export interface CreateAIAppRequest {
   name: string;
@@ -81,7 +87,7 @@ export interface CreateAIAppRequest {
   url?: string;
   api_endpoint?: string;
   api_key?: string;
-  tech_stack?: Record<string, any>;
+  tech_stack?: Record<string, unknown>;
   usage_guide?: string;
   input_example?: string;
   output_example?: string;
@@ -98,7 +104,7 @@ export interface UpdateAIAppRequest {
   url?: string;
   api_endpoint?: string;
   api_key?: string;
-  tech_stack?: Record<string, any>;
+  tech_stack?: Record<string, unknown>;
   usage_guide?: string;
   input_example?: string;
   output_example?: string;
@@ -108,12 +114,12 @@ export interface UpdateAIAppRequest {
 }
 
 export interface AIAppWithDetails extends AIApp {
-  category?: Category;
-  creator?: User;
-  tags?: Tag[];
-  reviews?: Review[];
-  favorites_count?: number;
-  is_favorited?: boolean;
+  category?: Category | undefined;
+  creator?: User | undefined;
+  tags?: Tag[] | undefined;
+  reviews?: Review[] | undefined;
+  favorites_count?: number | undefined;
+  is_favorited?: boolean | undefined;
 }
 
 // Tag related types
@@ -194,7 +200,11 @@ export interface Notification {
   created_at: Date;
 }
 
-export type NotificationType = 'new_app' | 'app_update' | 'maintenance' | 'recommendation';
+export type NotificationType =
+  | 'new_app'
+  | 'app_update'
+  | 'maintenance'
+  | 'recommendation';
 
 export interface CreateNotificationRequest {
   user_id: number;
@@ -205,7 +215,7 @@ export interface CreateNotificationRequest {
 }
 
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -225,28 +235,32 @@ export interface PaginatedResponse<T> {
 
 // Query parameters
 export interface PaginationQuery {
-  page?: number;
-  limit?: number;
+  page?: number | undefined;
+  limit?: number | undefined;
 }
 
 export interface SortQuery {
-  sort_by?: string;
-  order?: 'asc' | 'desc';
+  sort_by?: string | undefined;
+  order?: 'asc' | 'desc' | undefined;
 }
 
 export interface SearchQuery {
-  q?: string;
+  q?: string | undefined;
 }
 
 export interface FilterQuery {
-  category_id?: number;
-  status?: AppStatus;
-  is_public?: boolean;
-  creator_id?: number;
-  tags?: number[];
+  category_id?: number | undefined;
+  status?: AppStatus | undefined;
+  is_public?: boolean | undefined;
+  creator_id?: number | undefined;
+  tags?: number[] | undefined;
 }
 
-export interface AppListQuery extends PaginationQuery, SortQuery, SearchQuery, FilterQuery {}
+export interface AppListQuery
+  extends PaginationQuery,
+    SortQuery,
+    SearchQuery,
+    FilterQuery {}
 
 // Authentication types
 export interface AuthUser {
@@ -277,8 +291,16 @@ export interface AppStatistics {
 
 export interface UsageStatistics {
   daily_usage: Array<{ date: string; count: number }>;
-  popular_apps: Array<{ app_id: number; app_name: string; usage_count: number }>;
-  top_rated_apps: Array<{ app_id: number; app_name: string; avg_rating: number }>;
+  popular_apps: Array<{
+    app_id: number;
+    app_name: string;
+    usage_count: number;
+  }>;
+  top_rated_apps: Array<{
+    app_id: number;
+    app_name: string;
+    avg_rating: number;
+  }>;
 }
 
 // Error types

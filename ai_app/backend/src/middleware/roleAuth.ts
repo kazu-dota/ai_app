@@ -6,11 +6,15 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const requireRole = (allowedRoles: UserRole[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
       res.status(401).json({
         success: false,
-        error: 'Authentication required'
+        error: 'Authentication required',
       });
       return;
     }
@@ -18,7 +22,7 @@ export const requireRole = (allowedRoles: UserRole[]) => {
     if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({
         success: false,
-        error: 'Insufficient permissions'
+        error: 'Insufficient permissions',
       });
       return;
     }
@@ -35,7 +39,7 @@ export const requireSuperAdmin = (
   if (!req.user || req.user.role !== 'super_admin') {
     res.status(403).json({
       success: false,
-      error: 'Super admin access required'
+      error: 'Super admin access required',
     });
     return;
   }
@@ -45,11 +49,15 @@ export const requireSuperAdmin = (
 export const requireAdminOrOwner = (
   ownerIdExtractor: (req: AuthenticatedRequest) => number | undefined
 ) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+  return (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): void => {
     if (!req.user) {
       res.status(401).json({
         success: false,
-        error: 'Authentication required'
+        error: 'Authentication required',
       });
       return;
     }
@@ -71,7 +79,7 @@ export const requireAdminOrOwner = (
     if (ownerId === undefined) {
       res.status(400).json({
         success: false,
-        error: 'Unable to determine resource owner'
+        error: 'Unable to determine resource owner',
       });
       return;
     }
@@ -79,7 +87,7 @@ export const requireAdminOrOwner = (
     if (req.user.id !== ownerId) {
       res.status(403).json({
         success: false,
-        error: 'Access denied: You can only access your own resources'
+        error: 'Access denied: You can only access your own resources',
       });
       return;
     }

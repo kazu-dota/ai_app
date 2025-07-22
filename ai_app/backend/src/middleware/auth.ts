@@ -92,7 +92,7 @@ export const generateToken = (user: AuthUser): string => {
   };
 
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRATION || '24h',
+    expiresIn: process.env.JWT_EXPIRATION ?? '24h',
   } as jwt.SignOptions);
 };
 

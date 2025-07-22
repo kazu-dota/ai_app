@@ -1,20 +1,20 @@
 import rateLimit from 'express-rate-limit';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 // Default rate limiter - 100 requests per 15 minutes
 export const rateLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS ?? '900000'), // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS ?? '100'), // limit each IP to 100 requests per windowMs
   message: {
     success: false,
-    error: 'Too many requests from this IP, please try again later.'
+    error: 'Too many requests from this IP, please try again later.',
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req: Request) => {
     // Skip rate limiting for health checks
     return req.path === '/health' || req.path === '/api/health';
-  }
+  },
 });
 
 // Strict rate limiter for authentication endpoints - 5 requests per 15 minutes
@@ -23,7 +23,7 @@ export const authRateLimiter = rateLimit({
   max: 5, // limit each IP to 5 requests per windowMs
   message: {
     success: false,
-    error: 'Too many authentication attempts, please try again later.'
+    error: 'Too many authentication attempts, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -36,7 +36,7 @@ export const publicRateLimiter = rateLimit({
   max: 200, // limit each IP to 200 requests per windowMs
   message: {
     success: false,
-    error: 'Too many requests, please try again later.'
+    error: 'Too many requests, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -48,7 +48,7 @@ export const createRateLimiter = rateLimit({
   max: 10, // limit each IP to 10 creates per hour
   message: {
     success: false,
-    error: 'Too many creation requests, please try again later.'
+    error: 'Too many creation requests, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,
@@ -60,7 +60,7 @@ export const searchRateLimiter = rateLimit({
   max: 50, // limit each IP to 50 searches per 5 minutes
   message: {
     success: false,
-    error: 'Too many search requests, please try again later.'
+    error: 'Too many search requests, please try again later.',
   },
   standardHeaders: true,
   legacyHeaders: false,

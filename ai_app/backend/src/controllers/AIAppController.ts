@@ -8,6 +8,10 @@ import {
   PaginatedResponse,
   AuthUser,
   AppStatus,
+  AIApp,
+  AIAppWithDetails,
+  Tag,
+  ReviewWithUser,
 } from '@/types';
 import { validationResult } from 'express-validator';
 import logger from '@/config/logger';
@@ -63,7 +67,7 @@ export class AIAppController {
       const total = await this.aiAppModel.count();
       const totalPages = Math.ceil(total / (filters.limit ?? 20));
 
-      const response: PaginatedResponse<any> = {
+      const response: PaginatedResponse<AIAppWithDetails> = {
         success: true,
         data: apps,
         pagination: {
@@ -128,7 +132,7 @@ export class AIAppController {
         this.aiAppModel.getReviewsByAppId(appId, 5),
       ]);
 
-      const response: ApiResponse<any> = {
+      const response: ApiResponse<AIAppWithDetails & { tags: Tag[]; reviews: ReviewWithUser[] }> = {
         success: true,
         data: {
           ...app,
@@ -170,7 +174,7 @@ export class AIAppController {
         return;
       }
 
-      const appData: CreateAIAppRequest = req.body;
+      const appData = req.body as CreateAIAppRequest;
       const newApp = await this.aiAppModel.createWithCreator(
         appData,
         req.user.id
@@ -178,7 +182,7 @@ export class AIAppController {
 
       logger.info(`App created: ${newApp.name} by user ${req.user.id}`);
 
-      const response: ApiResponse<any> = {
+      const response: ApiResponse<AIAppWithDetails> = {
         success: true,
         data: newApp,
         message: 'App created successfully',
@@ -226,7 +230,7 @@ export class AIAppController {
         return;
       }
 
-      const existingApp = await this.aiAppModel.findById(appId);
+      const existingApp = await this.aiAppModel.findById<AIApp>(appId);
       if (!existingApp) {
         res.status(404).json({
           success: false,
@@ -238,7 +242,7 @@ export class AIAppController {
       // Check permissions
       if (
         req.user.role !== 'super_admin' &&
-        (existingApp as any).creator_id !== req.user.id
+        existingApp.creator_id !== req.user.id
       ) {
         res.status(403).json({
           success: false,
@@ -247,12 +251,20 @@ export class AIAppController {
         return;
       }
 
-      const updateData: UpdateAIAppRequest = req.body;
-      const updatedApp = await this.aiAppModel.update(appId, updateData);
+      const updateData = req.body as UpdateAIAppRequest;
+      const updatedApp = await this.aiAppModel.update<AIApp>(appId, updateData);
+      
+      if (!updatedApp) {
+        res.status(500).json({
+          success: false,
+          error: 'Failed to update app',
+        });
+        return;
+      }
 
       logger.info(`App updated: ${appId} by user ${req.user.id}`);
 
-      const response: ApiResponse<any> = {
+      const response: ApiResponse<AIApp> = {
         success: true,
         data: updatedApp,
         message: 'App updated successfully',
@@ -290,7 +302,7 @@ export class AIAppController {
         return;
       }
 
-      const existingApp = await this.aiAppModel.findById(appId);
+      const existingApp = await this.aiAppModel.findById<AIApp>(appId);
       if (!existingApp) {
         res.status(404).json({
           success: false,
@@ -302,7 +314,7 @@ export class AIAppController {
       // Check permissions
       if (
         req.user.role !== 'super_admin' &&
-        (existingApp as any).creator_id !== req.user.id
+        existingApp.creator_id !== req.user.id
       ) {
         res.status(403).json({
           success: false,
@@ -343,7 +355,7 @@ export class AIAppController {
       const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
       const apps = await this.aiAppModel.getPopularApps(limit);
 
-      const response: ApiResponse<any[]> = {
+      const response: ApiResponse<AIAppWithDetails[]> = {
         success: true,
         data: apps,
       };
@@ -363,7 +375,7 @@ export class AIAppController {
       const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
       const apps = await this.aiAppModel.getRecentApps(limit);
 
-      const response: ApiResponse<any[]> = {
+      const response: ApiResponse<AIAppWithDetails[]> = {
         success: true,
         data: apps,
       };
@@ -392,7 +404,7 @@ export class AIAppController {
       const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
       const apps = await this.aiAppModel.searchApps(searchTerm.trim(), limit);
 
-      const response: ApiResponse<any[]> = {
+      const response: ApiResponse<AIAppWithDetails[]> = {
         success: true,
         data: apps,
       };
@@ -431,7 +443,7 @@ export class AIAppController {
         return;
       }
 
-      const existingApp = await this.aiAppModel.findById(appId);
+      const existingApp = await this.aiAppModel.findById<AIApp>(appId);
       if (!existingApp) {
         res.status(404).json({
           success: false,

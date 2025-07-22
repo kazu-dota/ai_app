@@ -1,13 +1,56 @@
 import { BaseModel } from './BaseModel';
-import { AIApp, AIAppWithDetails, CreateAIAppRequest, UpdateAIAppRequest, AppListQuery } from '@/types';
+import {
+  AIApp,
+  AIAppWithDetails,
+  CreateAIAppRequest,
+  AppListQuery,
+  Tag,
+  ReviewWithUser,
+  AppStatus,
+  CategoryType,
+} from '@/types';
 import { query } from '@/config/database';
+
+interface DatabaseRow {
+  id: number;
+  name: string;
+  description: string;
+  category_id: number;
+  creator_id: number;
+  status: string;
+  url?: string;
+  api_endpoint?: string;
+  api_key?: string;
+  tech_stack?: Record<string, unknown>;
+  usage_guide?: string;
+  input_example?: string;
+  output_example?: string;
+  model_info?: string;
+  environment?: string;
+  usage_count: number;
+  avg_rating?: number | null;
+  is_public: boolean;
+  created_at: Date;
+  updated_at: Date;
+  category_name?: string;
+  category_description?: string;
+  category_type?: string;
+  category_color?: string;
+  creator_name?: string;
+  creator_email?: string;
+  favorites_count?: string;
+  is_favorited?: boolean;
+}
 
 export class AIAppModel extends BaseModel {
   constructor() {
     super('ai_apps');
   }
 
-  async findWithDetails(id: number, userId?: number): Promise<AIAppWithDetails | null> {
+  async findWithDetails(
+    id: number,
+    userId?: number
+  ): Promise<AIAppWithDetails | null> {
     const queryText = `
       SELECT 
         a.*,
@@ -30,14 +73,17 @@ export class AIAppModel extends BaseModel {
       WHERE a.id = $1
     `;
 
-    const result = await query<any>(queryText, [id, userId || null]);
+    const result = await query<AIAppWithDetails>(queryText, [id, userId ?? null]);
     if (!result[0]) return null;
 
     const app = result[0];
-    return this.mapToAppWithDetails(app);
+    return this.mapToAppWithDetails(app as unknown as DatabaseRow);
   }
 
-  async findAllWithFilters(filters: AppListQuery, userId?: number): Promise<AIAppWithDetails[]> {
+  async findAllWithFilters(
+    filters: AppListQuery,
+    userId?: number
+  ): Promise<AIAppWithDetails[]> {
     let queryText = `
       SELECT 
         a.*,
@@ -58,14 +104,16 @@ export class AIAppModel extends BaseModel {
       LEFT JOIN favorites uf ON a.id = uf.app_id AND uf.user_id = $1
     `;
 
-    const params: any[] = [userId || null];
+    const params: unknown[] = [userId ?? null];
     let paramIndex = 2;
 
     // Build WHERE clause
     const conditions: string[] = [];
 
     if (filters.q) {
-      conditions.push(`(a.name ILIKE $${paramIndex} OR a.description ILIKE $${paramIndex})`);
+      conditions.push(
+        `(a.name ILIKE $${paramIndex} OR a.description ILIKE $${paramIndex})`
+      );
       params.push(`%${filters.q}%`);
       paramIndex++;
     }
@@ -95,7 +143,9 @@ export class AIAppModel extends BaseModel {
     }
 
     if (filters.tags && filters.tags.length > 0) {
-      const tagPlaceholders = filters.tags.map(() => `$${paramIndex++}`).join(', ');
+      const tagPlaceholders = filters.tags
+        .map(() => `$${paramIndex++}`)
+        .join(', ');
       queryText += ` 
         INNER JOIN app_tags at ON a.id = at.app_id 
         INNER JOIN tags t ON at.tag_id = t.id
@@ -109,8 +159,8 @@ export class AIAppModel extends BaseModel {
     }
 
     // Add sorting
-    const sortBy = filters.sort_by || 'created_at';
-    const order = filters.order || 'desc';
+    const sortBy = filters.sort_by ?? 'created_at';
+    const order = filters.order ?? 'desc';
     queryText += ` ORDER BY a.${sortBy} ${order.toUpperCase()}`;
 
     // Add pagination
@@ -126,16 +176,19 @@ export class AIAppModel extends BaseModel {
       params.push(offset);
     }
 
-    const result = await query<any>(queryText, params);
-    return result.map(app => this.mapToAppWithDetails(app));
+    const result = await query<AIAppWithDetails>(queryText, params);
+    return result.map(app => this.mapToAppWithDetails(app as unknown as DatabaseRow));
   }
 
-  async createWithCreator(data: CreateAIAppRequest, creatorId: number): Promise<AIApp> {
+  async createWithCreator(
+    data: CreateAIAppRequest,
+    creatorId: number
+  ): Promise<AIApp> {
     const createData = { ...data, creator_id: creatorId };
     return await this.create<AIApp>(createData);
   }
 
-  async getTagsByAppId(appId: number): Promise<any[]> {
+  async getTagsByAppId(appId: number): Promise<Tag[]> {
     const queryText = `
       SELECT t.* 
       FROM tags t
@@ -143,10 +196,10 @@ export class AIAppModel extends BaseModel {
       WHERE at.app_id = $1
       ORDER BY t.name
     `;
-    return await query(queryText, [appId]);
+    return await query<Tag>(queryText, [appId]);
   }
 
-  async getReviewsByAppId(appId: number, limit = 10): Promise<any[]> {
+  async getReviewsByAppId(appId: number, limit = 10): Promise<ReviewWithUser[]> {
     const queryText = `
       SELECT r.*, u.name as user_name
       FROM reviews r
@@ -155,7 +208,7 @@ export class AIAppModel extends BaseModel {
       ORDER BY r.created_at DESC
       LIMIT $2
     `;
-    return await query(queryText, [appId, limit]);
+    return await query<ReviewWithUser>(queryText, [appId, limit]);
   }
 
   async addTagToApp(appId: number, tagId: number): Promise<void> {
@@ -166,11 +219,17 @@ export class AIAppModel extends BaseModel {
   }
 
   async removeTagFromApp(appId: number, tagId: number): Promise<void> {
-    await query('DELETE FROM app_tags WHERE app_id = $1 AND tag_id = $2', [appId, tagId]);
+    await query('DELETE FROM app_tags WHERE app_id = $1 AND tag_id = $2', [
+      appId,
+      tagId,
+    ]);
   }
 
   async incrementUsageCount(appId: number): Promise<void> {
-    await query('UPDATE ai_apps SET usage_count = usage_count + 1 WHERE id = $1', [appId]);
+    await query(
+      'UPDATE ai_apps SET usage_count = usage_count + 1 WHERE id = $1',
+      [appId]
+    );
   }
 
   async getPopularApps(limit = 10): Promise<AIApp[]> {
@@ -207,46 +266,50 @@ export class AIAppModel extends BaseModel {
     return await query<AIApp>(queryText, [searchTerm, limit]);
   }
 
-  private mapToAppWithDetails(row: any): AIAppWithDetails {
+  private mapToAppWithDetails(row: DatabaseRow): AIAppWithDetails {
     return {
       id: row.id,
       name: row.name,
       description: row.description,
       category_id: row.category_id,
       creator_id: row.creator_id,
-      status: row.status,
-      url: row.url,
-      api_endpoint: row.api_endpoint,
-      api_key: row.api_key,
-      tech_stack: row.tech_stack,
-      usage_guide: row.usage_guide,
-      input_example: row.input_example,
-      output_example: row.output_example,
-      model_info: row.model_info,
-      environment: row.environment,
+      status: row.status as AppStatus,
+      url: row.url ?? '',
+      api_endpoint: row.api_endpoint ?? '',
+      api_key: row.api_key ?? '',
+      tech_stack: row.tech_stack ?? {},
+      usage_guide: row.usage_guide ?? '',
+      input_example: row.input_example ?? '',
+      output_example: row.output_example ?? '',
+      model_info: row.model_info ?? '',
+      environment: row.environment ?? '',
       usage_count: row.usage_count,
-      avg_rating: parseFloat(row.avg_rating) || null,
+      avg_rating: row.avg_rating ? parseFloat(row.avg_rating.toString()) : null,
       is_public: row.is_public,
       created_at: row.created_at,
       updated_at: row.updated_at,
-      category: row.category_name ? {
-        id: row.category_id,
-        name: row.category_name,
-        type: row.category_type,
-        color: row.category_color,
-        created_at: new Date(),
-        updated_at: new Date()
-      } : undefined,
-      creator: row.creator_name ? {
-        id: row.creator_id,
-        name: row.creator_name,
-        email: row.creator_email,
-        role: 'user',
-        created_at: new Date(),
-        updated_at: new Date()
-      } : undefined,
-      favorites_count: parseInt(row.favorites_count) || 0,
-      is_favorited: row.is_favorited || false
+      category: row.category_name
+        ? {
+            id: row.category_id,
+            name: row.category_name,
+            type: row.category_type as CategoryType,
+            color: row.category_color ?? '',
+            created_at: new Date(),
+            updated_at: new Date(),
+          }
+        : undefined,
+      creator: row.creator_name
+        ? {
+            id: row.creator_id,
+            name: row.creator_name,
+            email: row.creator_email ?? '',
+            role: 'user',
+            created_at: new Date(),
+            updated_at: new Date(),
+          }
+        : undefined,
+      favorites_count: parseInt(row.favorites_count ?? '0') ?? 0,
+      is_favorited: row.is_favorited ?? false,
     };
   }
 }

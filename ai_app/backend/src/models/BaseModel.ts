@@ -13,17 +13,17 @@ export abstract class BaseModel {
       `SELECT * FROM ${this.tableName} WHERE id = $1`,
       [id]
     );
-    return result[0] || null;
+    return result[0] ?? null;
   }
 
   async findAll<T>(options?: PaginationQuery & SortQuery): Promise<T[]> {
     let queryText = `SELECT * FROM ${this.tableName}`;
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramIndex = 1;
 
     // Add sorting
     if (options?.sort_by) {
-      const order = options.order || 'asc';
+      const order = options.order ?? 'asc';
       queryText += ` ORDER BY ${options.sort_by} ${order.toUpperCase()}`;
     }
 
@@ -59,13 +59,17 @@ export abstract class BaseModel {
   }
 
   async update<T>(id: number, data: Partial<T>): Promise<T | null> {
-    const entries = Object.entries(data).filter(([_, value]) => value !== undefined);
+    const entries = Object.entries(data).filter(
+      ([, value]) => value !== undefined
+    );
     if (entries.length === 0) {
       return this.findById<T>(id);
     }
 
-    const columns = entries.map(([key], index) => `${key} = $${index + 2}`).join(', ');
-    const values = entries.map(([_, value]) => value);
+    const columns = entries
+      .map(([key], index) => `${key} = $${index + 2}`)
+      .join(', ');
+    const values = entries.map(([, value]) => value);
 
     const queryText = `
       UPDATE ${this.tableName}
@@ -75,26 +79,25 @@ export abstract class BaseModel {
     `;
 
     const result = await query<T>(queryText, [id, ...values]);
-    return result[0] || null;
+    return result[0] ?? null;
   }
 
   async delete(id: number): Promise<boolean> {
-    const result = await query(
-      `DELETE FROM ${this.tableName} WHERE id = $1`,
-      [id]
-    );
+    const result = await query(`DELETE FROM ${this.tableName} WHERE id = $1`, [
+      id,
+    ]);
     return result.length > 0;
   }
 
-  async count(whereClause?: string, params?: any[]): Promise<number> {
+  async count(whereClause?: string, params?: unknown[]): Promise<number> {
     let queryText = `SELECT COUNT(*) as count FROM ${this.tableName}`;
-    
+
     if (whereClause) {
       queryText += ` WHERE ${whereClause}`;
     }
 
     const result = await query<{ count: string }>(queryText, params);
-    return parseInt(result[0]?.count || '0');
+    return parseInt(result[0]?.count ?? '0');
   }
 
   async exists(id: number): Promise<boolean> {
@@ -105,9 +108,12 @@ export abstract class BaseModel {
     return result.length > 0;
   }
 
-  protected buildWhereClause(filters: Record<string, any>): { clause: string; params: any[] } {
+  protected buildWhereClause(filters: Record<string, unknown>): {
+    clause: string;
+    params: unknown[];
+  } {
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: unknown[] = [];
     let paramIndex = 1;
 
     for (const [key, value] of Object.entries(filters)) {
@@ -115,7 +121,7 @@ export abstract class BaseModel {
         if (Array.isArray(value)) {
           const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
           conditions.push(`${key} IN (${placeholders})`);
-          params.push(...value);
+          params.push(...(value as unknown[]));
         } else {
           conditions.push(`${key} = $${paramIndex++}`);
           params.push(value);
@@ -125,7 +131,7 @@ export abstract class BaseModel {
 
     return {
       clause: conditions.length > 0 ? conditions.join(' AND ') : '',
-      params
+      params,
     };
   }
 }
