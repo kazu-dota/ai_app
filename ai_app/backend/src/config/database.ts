@@ -4,22 +4,35 @@ import logger from './logger';
 
 dotenv.config();
 
-const dbConfig: PoolConfig = {
-  host: process.env.DB_HOST ?? 'localhost',
-  port: parseInt(process.env.DB_PORT ?? '5432'),
-  database: process.env.POSTGRES_DB ?? 'ai_app_db',
-  user: process.env.POSTGRES_USER ?? 'postgres',
-  password: process.env.POSTGRES_PASSWORD ?? 'password',
-  max: parseInt(process.env.DB_MAX_CONNECTIONS ?? '20'),
-  idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT ?? '30000'),
-  connectionTimeoutMillis: parseInt(
-    process.env.DB_CONNECTION_TIMEOUT ?? '2000'
-  ),
-  ssl:
-    process.env.NODE_ENV === 'production'
-      ? { rejectUnauthorized: false }
-      : false,
-};
+const dbConfig: PoolConfig = process.env.DATABASE_URL 
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      max: parseInt(process.env.DB_MAX_CONNECTIONS ?? '20'),
+      idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT ?? '30000'),
+      connectionTimeoutMillis: parseInt(
+        process.env.DB_CONNECTION_TIMEOUT ?? '2000'
+      ),
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
+    }
+  : {
+      host: process.env.DB_HOST ?? 'localhost',
+      port: parseInt(process.env.DB_PORT ?? '5432'),
+      database: process.env.POSTGRES_DB ?? 'ai_app_db',
+      user: process.env.POSTGRES_USER ?? 'postgres',
+      password: process.env.POSTGRES_PASSWORD ?? 'password',
+      max: parseInt(process.env.DB_MAX_CONNECTIONS ?? '20'),
+      idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT ?? '30000'),
+      connectionTimeoutMillis: parseInt(
+        process.env.DB_CONNECTION_TIMEOUT ?? '2000'
+      ),
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
+    };
 
 export const pool = new Pool(dbConfig);
 
