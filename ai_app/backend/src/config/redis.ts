@@ -2,7 +2,7 @@ import { createClient, RedisClientType } from 'redis';
 import logger from './logger';
 
 const redisConfig = {
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
+  url: process.env.REDIS_URL ?? 'redis://localhost:6379',
   socket: {
     connectTimeout: 5000,
     lazyConnect: true,
@@ -15,7 +15,7 @@ redisClient.on('connect', () => {
   logger.info('Connected to Redis server');
 });
 
-redisClient.on('error', (err) => {
+redisClient.on('error', err => {
   logger.error('Redis client error:', err);
 });
 

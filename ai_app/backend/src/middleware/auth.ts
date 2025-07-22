@@ -3,11 +3,18 @@ import jwt from 'jsonwebtoken';
 import { AuthUser, UserRole } from '@/types';
 import logger from '@/config/logger';
 
+interface JwtPayload {
+  id: number;
+  email: string;
+  name: string;
+  role: UserRole;
+}
+
 interface AuthenticatedRequest extends Request {
   user?: AuthUser;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET ?? 'your-secret-key';
 
 export const authenticateToken = (
   req: AuthenticatedRequest,
@@ -15,30 +22,32 @@ export const authenticateToken = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader?.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
     res.status(401).json({
       success: false,
-      error: 'Authentication token required'
+      error: 'Authentication token required',
     });
     return;
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     req.user = {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
-      role: decoded.role as UserRole
+      role: decoded.role,
     };
     next();
   } catch (error) {
-    logger.warn('Invalid token attempt:', { token: token.substring(0, 10) + '...' });
+    logger.warn('Invalid token attempt:', {
+      token: token.substring(0, 10) + '...',
+    });
     res.status(403).json({
       success: false,
-      error: 'Invalid or expired token'
+      error: 'Invalid or expired token',
     });
   }
 };
@@ -49,7 +58,7 @@ export const optionalAuth = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader?.split(' ')[1]; // Bearer TOKEN
 
   if (!token) {
     next();
@@ -57,16 +66,18 @@ export const optionalAuth = (
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     req.user = {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
-      role: decoded.role as UserRole
+      role: decoded.role,
     };
   } catch (error) {
     // Invalid token, but continue without user
-    logger.warn('Invalid token in optional auth:', { token: token.substring(0, 10) + '...' });
+    logger.warn('Invalid token in optional auth:', {
+      token: token.substring(0, 10) + '...',
+    });
   }
 
   next();
@@ -77,22 +88,22 @@ export const generateToken = (user: AuthUser): string => {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role
+    role: user.role,
   };
 
   return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRATION || '24h'
-  });
+    expiresIn: process.env.JWT_EXPIRATION || '24h',
+  } as jwt.SignOptions);
 };
 
 export const verifyToken = (token: string): AuthUser | null => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     return {
       id: decoded.id,
       email: decoded.email,
       name: decoded.name,
-      role: decoded.role as UserRole
+      role: decoded.role,
     };
   } catch (error) {
     logger.warn('Token verification failed:', error);

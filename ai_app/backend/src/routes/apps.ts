@@ -1,9 +1,15 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { body, query, param } from 'express-validator';
 import { AIAppController } from '@/controllers/AIAppController';
 import { authenticateToken, optionalAuth } from '@/middleware/auth';
 import { requireRole } from '@/middleware/roleAuth';
 import { rateLimiter } from '@/middleware/rateLimiter';
+
+// Async handler wrapper for Express routes
+const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
 
 /**
  * @swagger
@@ -36,12 +42,16 @@ const createAppValidation = [
     .withMessage('Category ID must be a positive integer'),
   body('status')
     .optional()
-    .isIn(['development', 'testing', 'active', 'maintenance', 'deprecated', 'archived'])
+    .isIn([
+      'development',
+      'testing',
+      'active',
+      'maintenance',
+      'deprecated',
+      'archived',
+    ])
     .withMessage('Invalid status value'),
-  body('url')
-    .optional()
-    .isURL()
-    .withMessage('URL must be a valid URL'),
+  body('url').optional().isURL().withMessage('URL must be a valid URL'),
   body('api_endpoint')
     .optional()
     .isURL()
@@ -63,7 +73,7 @@ const createAppValidation = [
   body('is_public')
     .optional()
     .isBoolean()
-    .withMessage('is_public must be a boolean')
+    .withMessage('is_public must be a boolean'),
 ];
 
 const updateAppValidation = [
@@ -83,12 +93,16 @@ const updateAppValidation = [
     .withMessage('Category ID must be a positive integer'),
   body('status')
     .optional()
-    .isIn(['development', 'testing', 'active', 'maintenance', 'deprecated', 'archived'])
+    .isIn([
+      'development',
+      'testing',
+      'active',
+      'maintenance',
+      'deprecated',
+      'archived',
+    ])
     .withMessage('Invalid status value'),
-  body('url')
-    .optional()
-    .isURL()
-    .withMessage('URL must be a valid URL'),
+  body('url').optional().isURL().withMessage('URL must be a valid URL'),
   body('api_endpoint')
     .optional()
     .isURL()
@@ -110,7 +124,7 @@ const updateAppValidation = [
   body('is_public')
     .optional()
     .isBoolean()
-    .withMessage('is_public must be a boolean')
+    .withMessage('is_public must be a boolean'),
 ];
 
 const listAppsValidation = [
@@ -136,7 +150,14 @@ const listAppsValidation = [
     .withMessage('Category ID must be a positive integer'),
   query('status')
     .optional()
-    .isIn(['development', 'testing', 'active', 'maintenance', 'deprecated', 'archived'])
+    .isIn([
+      'development',
+      'testing',
+      'active',
+      'maintenance',
+      'deprecated',
+      'archived',
+    ])
     .withMessage('Invalid status value'),
   query('is_public')
     .optional()
@@ -150,13 +171,11 @@ const listAppsValidation = [
     .optional()
     .trim()
     .isLength({ min: 1, max: 200 })
-    .withMessage('Search query must be between 1 and 200 characters')
+    .withMessage('Search query must be between 1 and 200 characters'),
 ];
 
 const idParamValidation = [
-  param('id')
-    .isInt({ min: 1 })
-    .withMessage('ID must be a positive integer')
+  param('id').isInt({ min: 1 }).withMessage('ID must be a positive integer'),
 ];
 
 const tagIdParamValidation = [
@@ -165,7 +184,7 @@ const tagIdParamValidation = [
     .withMessage('App ID must be a positive integer'),
   param('tagId')
     .isInt({ min: 1 })
-    .withMessage('Tag ID must be a positive integer')
+    .withMessage('Tag ID must be a positive integer'),
 ];
 
 // Public routes (no authentication required)
@@ -211,23 +230,32 @@ const tagIdParamValidation = [
 router.get(
   '/popular',
   rateLimiter,
-  query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
-  aiAppController.getPopularApps
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('Limit must be between 1 and 50'),
+  asyncHandler(aiAppController.getPopularApps.bind(aiAppController))
 );
 
 router.get(
   '/recent',
   rateLimiter,
-  query('limit').optional().isInt({ min: 1, max: 50 }).withMessage('Limit must be between 1 and 50'),
-  aiAppController.getRecentApps
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 })
+    .withMessage('Limit must be between 1 and 50'),
+  asyncHandler(aiAppController.getRecentApps.bind(aiAppController))
 );
 
 router.get(
   '/search',
   rateLimiter,
   query('q').notEmpty().withMessage('Search query is required'),
-  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-  aiAppController.searchApps
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 100 })
+    .withMessage('Limit must be between 1 and 100'),
+  asyncHandler(aiAppController.searchApps.bind(aiAppController))
 );
 
 // Routes with optional authentication (enhances user experience)
@@ -318,7 +346,7 @@ router.get(
   optionalAuth,
   rateLimiter,
   listAppsValidation,
-  aiAppController.getApps
+  asyncHandler(aiAppController.getApps.bind(aiAppController))
 );
 
 /**
@@ -364,7 +392,7 @@ router.get(
   optionalAuth,
   rateLimiter,
   idParamValidation,
-  aiAppController.getAppById
+  asyncHandler(aiAppController.getAppById.bind(aiAppController))
 );
 
 // Protected routes (authentication required)
@@ -374,7 +402,7 @@ router.post(
   requireRole(['user', 'admin', 'super_admin']),
   rateLimiter,
   createAppValidation,
-  aiAppController.createApp
+  asyncHandler(aiAppController.createApp.bind(aiAppController))
 );
 
 router.put(
@@ -384,7 +412,7 @@ router.put(
   rateLimiter,
   idParamValidation,
   updateAppValidation,
-  aiAppController.updateApp
+  asyncHandler(aiAppController.updateApp.bind(aiAppController))
 );
 
 router.delete(
@@ -393,7 +421,7 @@ router.delete(
   requireRole(['user', 'admin', 'super_admin']),
   rateLimiter,
   idParamValidation,
-  aiAppController.deleteApp
+  asyncHandler(aiAppController.deleteApp.bind(aiAppController))
 );
 
 // Tag management (admin+ required)
@@ -403,7 +431,7 @@ router.post(
   requireRole(['admin', 'super_admin']),
   rateLimiter,
   tagIdParamValidation,
-  aiAppController.addTagToApp
+  asyncHandler(aiAppController.addTagToApp.bind(aiAppController))
 );
 
 router.delete(
@@ -412,7 +440,7 @@ router.delete(
   requireRole(['admin', 'super_admin']),
   rateLimiter,
   tagIdParamValidation,
-  aiAppController.removeTagFromApp
+  asyncHandler(aiAppController.removeTagFromApp.bind(aiAppController))
 );
 
 export default router;

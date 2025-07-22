@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import { AIAppModel } from '@/models/AIAppModel';
-import { CreateAIAppRequest, UpdateAIAppRequest, AppListQuery, ApiResponse, PaginatedResponse, AuthUser } from '@/types';
+import {
+  CreateAIAppRequest,
+  UpdateAIAppRequest,
+  AppListQuery,
+  ApiResponse,
+  PaginatedResponse,
+  AuthUser,
+  AppStatus,
+} from '@/types';
 import { validationResult } from 'express-validator';
 import logger from '@/config/logger';
 
@@ -9,7 +17,7 @@ interface AuthenticatedRequest extends Request {
 }
 
 export class AIAppController {
-  private aiAppModel: AIAppModel;
+  private readonly aiAppModel: AIAppModel;
 
   constructor() {
     this.aiAppModel = new AIAppModel();
@@ -22,7 +30,7 @@ export class AIAppController {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
         return;
       }
@@ -30,31 +38,40 @@ export class AIAppController {
       const filters: AppListQuery = {
         page: parseInt(req.query.page as string) || 1,
         limit: Math.min(parseInt(req.query.limit as string) || 20, 100),
-        sort_by: req.query.sort_by as string || 'created_at',
+        sort_by: (req.query.sort_by as string) || 'created_at',
         order: (req.query.order as 'asc' | 'desc') || 'desc',
         q: req.query.q as string,
-        category_id: req.query.category_id ? parseInt(req.query.category_id as string) : undefined,
-        status: req.query.status as any,
-        is_public: req.query.is_public !== undefined ? req.query.is_public === 'true' : undefined,
-        creator_id: req.query.creator_id ? parseInt(req.query.creator_id as string) : undefined,
-        tags: req.query.tags ? (req.query.tags as string).split(',').map(Number) : undefined
+        category_id: req.query.category_id
+          ? parseInt(req.query.category_id as string)
+          : undefined,
+        status: req.query.status as AppStatus | undefined,
+        is_public:
+          req.query.is_public !== undefined
+            ? req.query.is_public === 'true'
+            : undefined,
+        creator_id: req.query.creator_id
+          ? parseInt(req.query.creator_id as string)
+          : undefined,
+        tags: req.query.tags
+          ? (req.query.tags as string).split(',').map(Number)
+          : undefined,
       };
 
       const userId = req.user?.id;
       const apps = await this.aiAppModel.findAllWithFilters(filters, userId);
 
       const total = await this.aiAppModel.count();
-      const totalPages = Math.ceil(total / filters.limit);
+      const totalPages = Math.ceil(total / (filters.limit ?? 20));
 
       const response: PaginatedResponse<any> = {
         success: true,
         data: apps,
         pagination: {
-          page: filters.page,
-          limit: filters.limit,
+          page: filters.page ?? 1,
+          limit: filters.limit ?? 20,
           total,
-          total_pages: totalPages
-        }
+          total_pages: totalPages,
+        },
       };
 
       res.json(response);
@@ -62,18 +79,21 @@ export class AIAppController {
       logger.error('Error fetching apps:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch apps'
+        error: 'Failed to fetch apps',
       });
     }
   };
 
-  getAppById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  getAppById = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      const appId = parseInt(req.params.id);
+      const appId = parseInt(req.params.id!);
       if (isNaN(appId)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid app ID'
+          error: 'Invalid app ID',
         });
         return;
       }
@@ -84,16 +104,20 @@ export class AIAppController {
       if (!app) {
         res.status(404).json({
           success: false,
-          error: 'App not found'
+          error: 'App not found',
         });
         return;
       }
 
       // Check if user can access private apps
-      if (!app.is_public && (!req.user || (req.user.id !== app.creator_id && req.user.role !== 'super_admin'))) {
+      if (
+        !app.is_public &&
+        (!req.user ||
+          (req.user.id !== app.creator_id && req.user.role !== 'super_admin'))
+      ) {
         res.status(403).json({
           success: false,
-          error: 'Access denied'
+          error: 'Access denied',
         });
         return;
       }
@@ -101,7 +125,7 @@ export class AIAppController {
       // Get additional details
       const [tags, reviews] = await Promise.all([
         this.aiAppModel.getTagsByAppId(appId),
-        this.aiAppModel.getReviewsByAppId(appId, 5)
+        this.aiAppModel.getReviewsByAppId(appId, 5),
       ]);
 
       const response: ApiResponse<any> = {
@@ -109,8 +133,8 @@ export class AIAppController {
         data: {
           ...app,
           tags,
-          reviews
-        }
+          reviews,
+        },
       };
 
       res.json(response);
@@ -118,19 +142,22 @@ export class AIAppController {
       logger.error('Error fetching app details:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch app details'
+        error: 'Failed to fetch app details',
       });
     }
   };
 
-  createApp = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  createApp = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
         return;
       }
@@ -138,20 +165,23 @@ export class AIAppController {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
         return;
       }
 
       const appData: CreateAIAppRequest = req.body;
-      const newApp = await this.aiAppModel.createWithCreator(appData, req.user.id);
+      const newApp = await this.aiAppModel.createWithCreator(
+        appData,
+        req.user.id
+      );
 
       logger.info(`App created: ${newApp.name} by user ${req.user.id}`);
 
       const response: ApiResponse<any> = {
         success: true,
         data: newApp,
-        message: 'App created successfully'
+        message: 'App created successfully',
       };
 
       res.status(201).json(response);
@@ -159,28 +189,31 @@ export class AIAppController {
       logger.error('Error creating app:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to create app'
+        error: 'Failed to create app',
       });
     }
   };
 
-  updateApp = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  updateApp = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({
           success: false,
           error: 'Validation failed',
-          details: errors.array()
+          details: errors.array(),
         });
         return;
       }
 
-      const appId = parseInt(req.params.id);
+      const appId = parseInt(req.params.id!);
       if (isNaN(appId)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid app ID'
+          error: 'Invalid app ID',
         });
         return;
       }
@@ -188,7 +221,7 @@ export class AIAppController {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
         return;
       }
@@ -197,16 +230,19 @@ export class AIAppController {
       if (!existingApp) {
         res.status(404).json({
           success: false,
-          error: 'App not found'
+          error: 'App not found',
         });
         return;
       }
 
       // Check permissions
-      if (req.user.role !== 'super_admin' && (existingApp as any).creator_id !== req.user.id) {
+      if (
+        req.user.role !== 'super_admin' &&
+        (existingApp as any).creator_id !== req.user.id
+      ) {
         res.status(403).json({
           success: false,
-          error: 'Insufficient permissions'
+          error: 'Insufficient permissions',
         });
         return;
       }
@@ -219,7 +255,7 @@ export class AIAppController {
       const response: ApiResponse<any> = {
         success: true,
         data: updatedApp,
-        message: 'App updated successfully'
+        message: 'App updated successfully',
       };
 
       res.json(response);
@@ -227,18 +263,21 @@ export class AIAppController {
       logger.error('Error updating app:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to update app'
+        error: 'Failed to update app',
       });
     }
   };
 
-  deleteApp = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  deleteApp = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      const appId = parseInt(req.params.id);
+      const appId = parseInt(req.params.id!);
       if (isNaN(appId)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid app ID'
+          error: 'Invalid app ID',
         });
         return;
       }
@@ -246,7 +285,7 @@ export class AIAppController {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
         return;
       }
@@ -255,26 +294,29 @@ export class AIAppController {
       if (!existingApp) {
         res.status(404).json({
           success: false,
-          error: 'App not found'
+          error: 'App not found',
         });
         return;
       }
 
       // Check permissions
-      if (req.user.role !== 'super_admin' && (existingApp as any).creator_id !== req.user.id) {
+      if (
+        req.user.role !== 'super_admin' &&
+        (existingApp as any).creator_id !== req.user.id
+      ) {
         res.status(403).json({
           success: false,
-          error: 'Insufficient permissions'
+          error: 'Insufficient permissions',
         });
         return;
       }
 
       const deleted = await this.aiAppModel.delete(appId);
-      
+
       if (!deleted) {
         res.status(500).json({
           success: false,
-          error: 'Failed to delete app'
+          error: 'Failed to delete app',
         });
         return;
       }
@@ -283,7 +325,7 @@ export class AIAppController {
 
       const response: ApiResponse<null> = {
         success: true,
-        message: 'App deleted successfully'
+        message: 'App deleted successfully',
       };
 
       res.json(response);
@@ -291,7 +333,7 @@ export class AIAppController {
       logger.error('Error deleting app:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to delete app'
+        error: 'Failed to delete app',
       });
     }
   };
@@ -303,7 +345,7 @@ export class AIAppController {
 
       const response: ApiResponse<any[]> = {
         success: true,
-        data: apps
+        data: apps,
       };
 
       res.json(response);
@@ -311,7 +353,7 @@ export class AIAppController {
       logger.error('Error fetching popular apps:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch popular apps'
+        error: 'Failed to fetch popular apps',
       });
     }
   };
@@ -323,7 +365,7 @@ export class AIAppController {
 
       const response: ApiResponse<any[]> = {
         success: true,
-        data: apps
+        data: apps,
       };
 
       res.json(response);
@@ -331,7 +373,7 @@ export class AIAppController {
       logger.error('Error fetching recent apps:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch recent apps'
+        error: 'Failed to fetch recent apps',
       });
     }
   };
@@ -342,7 +384,7 @@ export class AIAppController {
       if (!searchTerm || searchTerm.trim().length === 0) {
         res.status(400).json({
           success: false,
-          error: 'Search term is required'
+          error: 'Search term is required',
         });
         return;
       }
@@ -352,7 +394,7 @@ export class AIAppController {
 
       const response: ApiResponse<any[]> = {
         success: true,
-        data: apps
+        data: apps,
       };
 
       res.json(response);
@@ -360,20 +402,23 @@ export class AIAppController {
       logger.error('Error searching apps:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to search apps'
+        error: 'Failed to search apps',
       });
     }
   };
 
-  addTagToApp = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  addTagToApp = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      const appId = parseInt(req.params.id);
-      const tagId = parseInt(req.params.tagId);
+      const appId = parseInt(req.params.id!);
+      const tagId = parseInt(req.params.tagId!);
 
       if (isNaN(appId) || isNaN(tagId)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid app ID or tag ID'
+          error: 'Invalid app ID or tag ID',
         });
         return;
       }
@@ -381,7 +426,7 @@ export class AIAppController {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
         return;
       }
@@ -390,7 +435,7 @@ export class AIAppController {
       if (!existingApp) {
         res.status(404).json({
           success: false,
-          error: 'App not found'
+          error: 'App not found',
         });
         return;
       }
@@ -399,7 +444,7 @@ export class AIAppController {
 
       const response: ApiResponse<null> = {
         success: true,
-        message: 'Tag added to app successfully'
+        message: 'Tag added to app successfully',
       };
 
       res.json(response);
@@ -407,20 +452,23 @@ export class AIAppController {
       logger.error('Error adding tag to app:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to add tag to app'
+        error: 'Failed to add tag to app',
       });
     }
   };
 
-  removeTagFromApp = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  removeTagFromApp = async (
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> => {
     try {
-      const appId = parseInt(req.params.id);
-      const tagId = parseInt(req.params.tagId);
+      const appId = parseInt(req.params.id!);
+      const tagId = parseInt(req.params.tagId!);
 
       if (isNaN(appId) || isNaN(tagId)) {
         res.status(400).json({
           success: false,
-          error: 'Invalid app ID or tag ID'
+          error: 'Invalid app ID or tag ID',
         });
         return;
       }
@@ -428,7 +476,7 @@ export class AIAppController {
       if (!req.user) {
         res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
         return;
       }
@@ -437,7 +485,7 @@ export class AIAppController {
 
       const response: ApiResponse<null> = {
         success: true,
-        message: 'Tag removed from app successfully'
+        message: 'Tag removed from app successfully',
       };
 
       res.json(response);
@@ -445,7 +493,7 @@ export class AIAppController {
       logger.error('Error removing tag from app:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to remove tag from app'
+        error: 'Failed to remove tag from app',
       });
     }
   };
