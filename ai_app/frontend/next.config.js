@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 const nextConfig = {
@@ -11,60 +11,57 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   images: {
-    domains: [
-      'localhost',
-      'images.unsplash.com',
-      'via.placeholder.com'
-    ],
-    formats: ['image/webp', 'image/avif'],
+    domains: ["localhost", "images.unsplash.com", "via.placeholder.com"],
+    formats: ["image/webp", "image/avif"],
   },
   env: {
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
-    NEXT_PUBLIC_APP_NAME: 'AI App Catalog',
-    NEXT_PUBLIC_APP_DESCRIPTION: '社内向けAIアプリケーション一覧プラットフォーム',
+    NEXT_PUBLIC_API_BASE_URL:
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001",
+    NEXT_PUBLIC_APP_NAME: "AI App Catalog",
+    NEXT_PUBLIC_APP_DESCRIPTION:
+      "社内向けAIアプリケーション一覧プラットフォーム",
   },
   async rewrites() {
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001";
     return [
       {
-        source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`,
+        source: "/api/:path*",
+        destination: `${apiBaseUrl}/api/:path*`,
       },
     ];
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
         ],
       },
     ];
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@headlessui/react'],
-  },
+  experimental: {},
   webpack: (config, { dev, isServer }) => {
     // Bundle analyzer
-    if (process.env.ANALYZE === 'true' && !isServer) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+    if (process.env.ANALYZE === "true" && !isServer) {
+      const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
       config.plugins.push(
         new BundleAnalyzerPlugin({
-          analyzerMode: 'server',
+          analyzerMode: "server",
           analyzerPort: 8888,
           openAnalyzer: true,
-        })
+        }),
       );
     }
 
@@ -72,12 +69,12 @@ const nextConfig = {
   },
   // Performance optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === "production",
   },
   // PWA support (future enhancement)
-  ...(process.env.NODE_ENV === 'production' && {
+  ...(process.env.NODE_ENV === "production" && {
     async generateBuildId() {
-      return `build-${new Date().toISOString()}`;
+      return `build-${new Date().toISOString().replace(/[:.]/g, '-')}`;
     },
   }),
 };
