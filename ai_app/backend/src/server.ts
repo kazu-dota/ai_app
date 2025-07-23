@@ -13,6 +13,8 @@ import { setupSwagger } from './swagger';
 
 // Import routes
 import appsRouter from './routes/apps';
+import rankingRouter from './routes/ranking';
+import adminRouter from './routes/admin';
 
 // Load environment variables
 dotenv.config();
@@ -66,6 +68,8 @@ setupSwagger(app);
 
 // API Routes
 app.use('/api/apps', appsRouter);
+app.use('/api/ranking', rankingRouter);
+app.use('/api/admin', adminRouter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -108,6 +112,8 @@ app.get('/api', (req, res) => {
     description: 'Backend API for AI App Catalog platform',
     endpoints: {
       apps: '/api/apps',
+      ranking: '/api/ranking',
+      admin: '/api/admin',
       health: '/api/health',
       docs: '/api-docs',
     },

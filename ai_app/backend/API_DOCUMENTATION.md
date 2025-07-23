@@ -52,6 +52,7 @@ The API uses standard HTTP status codes:
 - `500` - Internal Server Error
 
 Error response example:
+
 ```json
 {
   "success": false,
@@ -65,9 +66,11 @@ Error response example:
 ### Applications
 
 #### GET /apps
+
 List AI applications with filtering and pagination.
 
 **Query Parameters:**
+
 - `page` (optional): Page number (default: 1)
 - `limit` (optional): Items per page (default: 20, max: 100)
 - `sort_by` (optional): Sort field (name, created_at, updated_at, usage_count, avg_rating)
@@ -78,6 +81,7 @@ List AI applications with filtering and pagination.
 - `search` (optional): Search query for name and description
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -94,15 +98,19 @@ List AI applications with filtering and pagination.
 ```
 
 #### GET /apps/:id
+
 Get a specific application by ID.
 
 **Parameters:**
+
 - `id` (path): Application ID
 
 #### POST /apps
+
 Create a new application. **Requires authentication.**
 
 **Request Body:**
+
 ```json
 {
   "name": "Application Name",
@@ -126,20 +134,25 @@ Create a new application. **Requires authentication.**
 ```
 
 #### PUT /apps/:id
+
 Update an application. **Requires authentication and ownership.**
 
 #### DELETE /apps/:id
+
 Delete an application. **Requires authentication and ownership.**
 
 ### Reviews
 
 #### GET /apps/:id/reviews
+
 Get reviews for a specific application.
 
 #### POST /apps/:id/reviews
+
 Create a review for an application. **Requires authentication.**
 
 **Request Body:**
+
 ```json
 {
   "rating": 5,
@@ -150,20 +163,25 @@ Create a review for an application. **Requires authentication.**
 ### Favorites
 
 #### POST /apps/:id/favorite
+
 Add application to favorites. **Requires authentication.**
 
 #### DELETE /apps/:id/favorite
+
 Remove application from favorites. **Requires authentication.**
 
 #### GET /apps/favorites
+
 Get user's favorite applications. **Requires authentication.**
 
 ### Usage Tracking
 
 #### POST /apps/:id/usage
+
 Track application usage. **Requires authentication.**
 
 **Request Body:**
+
 ```json
 {
   "action": "view" // or "use"
@@ -173,48 +191,59 @@ Track application usage. **Requires authentication.**
 ### Categories & Tags
 
 #### GET /categories
+
 Get all categories.
 
 #### GET /tags
+
 Get all tags.
 
 ### Popular & Recent
 
 #### GET /apps/popular
+
 Get popular applications based on usage count.
 
 **Query Parameters:**
+
 - `limit` (optional): Number of apps to return (default: 10, max: 50)
 
 #### GET /apps/recent
+
 Get recently created/updated applications.
 
 **Query Parameters:**
+
 - `limit` (optional): Number of apps to return (default: 10, max: 50)
 
 #### GET /apps/search
+
 Search applications by name and description.
 
 **Query Parameters:**
+
 - `q` (required): Search query
 - `limit` (optional): Number of results (default: 20, max: 100)
 
 ## Data Models
 
 ### Application Status Values
+
 - `development` - Under development
-- `testing` - In testing phase  
+- `testing` - In testing phase
 - `active` - Active and available
 - `maintenance` - Under maintenance
 - `deprecated` - Deprecated but still available
 - `archived` - Archived and not available
 
 ### Category Types
+
 - `business` - Business function categories
-- `target` - Target user categories  
+- `target` - Target user categories
 - `difficulty` - Difficulty level categories
 
 ### User Roles
+
 - `user` - Regular user
 - `admin` - Administrator
 - `super_admin` - Super administrator
@@ -222,27 +251,31 @@ Search applications by name and description.
 ## Development Setup
 
 1. **Install dependencies:**
+
    ```bash
    cd backend
    npm install
    ```
 
 2. **Environment setup:**
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Database setup:**
+
    ```bash
    # Run migrations
    psql -U your_user -d ai_app_catalog -f database/migrations/001_create_initial_schema.sql
-   
+
    # Seed data
    psql -U your_user -d ai_app_catalog -f database/seeds/001_initial_data.sql
    ```
 
 4. **Start the server:**
+
    ```bash
    npm run dev
    ```
@@ -281,7 +314,7 @@ The API includes built-in monitoring capabilities:
 ## Performance Optimizations
 
 - **Caching**: Redis caching for frequently accessed data
-- **Compression**: Response compression middleware  
+- **Compression**: Response compression middleware
 - **Database Indexing**: Optimized database queries
 - **Pagination**: Efficient data pagination
 - **Connection Pooling**: Database connection optimization

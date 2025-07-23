@@ -26,22 +26,26 @@ AI App Catalogプロジェクトへのコントリビューションを歓迎し
 
 1. リポジトリをフォーク
 2. ローカルにクローン
+
 ```bash
 git clone https://github.com/YOUR_USERNAME/ai_app.git
 cd ai_app
 ```
 
 3. 依存関係のインストール
+
 ```bash
 npm install
 ```
 
 4. 環境変数の設定
+
 ```bash
 cp .env.example .env
 ```
 
 5. 開発サーバーの起動
+
 ```bash
 npm run dev
 ```

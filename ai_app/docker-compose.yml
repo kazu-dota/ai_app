@@ -33,7 +33,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: ai_app_backend
     environment:
       - NODE_ENV=development
@@ -48,16 +48,15 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
-    command: npm run dev
+      - /app/node_modules
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+      dockerfile: Dockerfile.dev
     container_name: ai_app_frontend
     environment:
+      - NODE_ENV=development
       - NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
     ports:
       - "3000:3000"
@@ -65,8 +64,8 @@ services:
       - backend
     volumes:
       - ./frontend:/app
+      - /app/node_modules
       - /app/.next
-    command: npm run dev
 
 volumes:
   postgres_data:

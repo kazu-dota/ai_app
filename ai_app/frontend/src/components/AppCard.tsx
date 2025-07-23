@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { 
+import Link from "next/link";
+import {
   StarIcon as StarIconSolid,
   HeartIcon as HeartIconSolid,
   EyeIcon,
   ClockIcon,
-} from '@heroicons/react/24/solid';
-import { 
+} from "@heroicons/react/24/solid";
+import {
   StarIcon,
   HeartIcon,
   TagIcon,
   UserIcon,
-} from '@heroicons/react/24/outline';
-import { AIAppWithDetails } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
-import { ja } from 'date-fns/locale';
+} from "@heroicons/react/24/outline";
+import { AIAppWithDetails } from "@/types";
+import { formatDistanceToNow } from "date-fns";
+import { ja } from "date-fns/locale";
 
 interface AppCardProps {
   app: AIAppWithDetails;
@@ -23,23 +23,23 @@ interface AppCardProps {
   className?: string;
 }
 
-export function AppCard({ app, onClick, className = '' }: AppCardProps) {
+export function AppCard({ app, onClick, className = "" }: AppCardProps) {
   const statusColors = {
-    active: 'bg-green-100 text-green-800',
-    development: 'bg-yellow-100 text-yellow-800',
-    testing: 'bg-blue-100 text-blue-800',
-    maintenance: 'bg-orange-100 text-orange-800',
-    deprecated: 'bg-red-100 text-red-800',
-    archived: 'bg-gray-100 text-gray-800',
+    active: "bg-green-100 text-green-800",
+    development: "bg-yellow-100 text-yellow-800",
+    testing: "bg-blue-100 text-blue-800",
+    maintenance: "bg-orange-100 text-orange-800",
+    deprecated: "bg-red-100 text-red-800",
+    archived: "bg-gray-100 text-gray-800",
   };
 
   const statusLabels = {
-    active: '稼働中',
-    development: '開発中',
-    testing: 'テスト中',
-    maintenance: 'メンテナンス',
-    deprecated: '廃止予定',
-    archived: '廃止済み',
+    active: "稼働中",
+    development: "開発中",
+    testing: "テスト中",
+    maintenance: "メンテナンス",
+    deprecated: "廃止予定",
+    archived: "廃止済み",
   };
 
   const renderStars = (rating?: number) => {
@@ -50,7 +50,7 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
-          <StarIconSolid key={i} className="h-4 w-4 text-yellow-400" />
+          <StarIconSolid key={i} className="h-4 w-4 text-yellow-400" />,
         );
       } else if (i === fullStars && hasHalfStar) {
         stars.push(
@@ -59,12 +59,10 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
             <div className="absolute inset-0 overflow-hidden w-1/2">
               <StarIconSolid className="h-4 w-4 text-yellow-400" />
             </div>
-          </div>
+          </div>,
         );
       } else {
-        stars.push(
-          <StarIcon key={i} className="h-4 w-4 text-gray-300" />
-        );
+        stars.push(<StarIcon key={i} className="h-4 w-4 text-gray-300" />);
       }
     }
 
@@ -72,10 +70,14 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
   };
 
   const cardContent = (
-    <div className={`group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${className}`}>
+    <div
+      className={`group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${className}`}
+    >
       {/* Status badge */}
       <div className="absolute top-4 right-4 z-10">
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status]}`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status]}`}
+        >
           {statusLabels[app.status]}
         </span>
       </div>
@@ -100,7 +102,11 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
               <span
                 key={tag.id}
                 className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
-                style={tag.color ? { backgroundColor: `${tag.color}20`, color: tag.color } : {}}
+                style={
+                  tag.color
+                    ? { backgroundColor: `${tag.color}20`, color: tag.color }
+                    : {}
+                }
               >
                 <TagIcon className="h-3 w-3 mr-1" />
                 {tag.name}
@@ -119,10 +125,14 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
           <div className="mt-2 flex items-center text-sm text-gray-500">
             <span
               className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-              style={app.category.color ? { 
-                backgroundColor: `${app.category.color}20`, 
-                color: app.category.color 
-              } : { backgroundColor: '#f3f4f6', color: '#6b7280' }}
+              style={
+                app.category.color
+                  ? {
+                      backgroundColor: `${app.category.color}20`,
+                      color: app.category.color,
+                    }
+                  : { backgroundColor: "#f3f4f6", color: "#6b7280" }
+              }
             >
               {app.category.name}
             </span>
@@ -142,7 +152,7 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
               </span>
             )}
           </div>
-          
+
           {app.is_favorited !== undefined && (
             <div className="flex items-center text-sm text-gray-500">
               {app.is_favorited ? (
@@ -172,9 +182,9 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
           <div className="flex items-center">
             <ClockIcon className="h-4 w-4 mr-1" />
             <span>
-              {formatDistanceToNow(new Date(app.updated_at), { 
-                addSuffix: true, 
-                locale: ja 
+              {formatDistanceToNow(new Date(app.updated_at), {
+                addSuffix: true,
+                locale: ja,
               })}
             </span>
           </div>
@@ -187,16 +197,8 @@ export function AppCard({ app, onClick, className = '' }: AppCardProps) {
   );
 
   if (onClick) {
-    return (
-      <div onClick={onClick}>
-        {cardContent}
-      </div>
-    );
+    return <div onClick={onClick}>{cardContent}</div>;
   }
 
-  return (
-    <Link href={`/apps/${app.id}`}>
-      {cardContent}
-    </Link>
-  );
+  return <Link href={`/apps/${app.id}`}>{cardContent}</Link>;
 }

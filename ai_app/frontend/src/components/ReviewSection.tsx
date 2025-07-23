@@ -240,6 +240,7 @@ export function ReviewSection({ appId }: ReviewSectionProps) {
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                     {review.user?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={review.user.avatar_url}
                         alt={review.user.name}

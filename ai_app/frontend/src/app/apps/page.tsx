@@ -1,35 +1,35 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { AppCard } from '@/components/AppCard';
-import { FilterSidebar } from '@/components/FilterSidebar';
-import { Pagination } from '@/components/Pagination';
-import { SortDropdown } from '@/components/SortDropdown';
-import { useAppStore } from '@/store/appStore';
-import { useAuthStore } from '@/store/authStore';
-import { 
+import { useEffect, useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { AppCard } from "@/components/AppCard";
+import { FilterSidebar } from "@/components/FilterSidebar";
+import { Pagination } from "@/components/Pagination";
+import { SortDropdown } from "@/components/SortDropdown";
+import { useAppStore } from "@/store/appStore";
+import { useAuthStore } from "@/store/authStore";
+import {
   AdjustmentsHorizontalIcon,
   XMarkIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/react/24/outline';
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/outline";
 
 export default function AppsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { 
-    apps, 
-    isLoading, 
-    error, 
-    currentPage, 
-    totalPages, 
+  const {
+    apps,
+    isLoading,
+    error,
+    currentPage,
+    totalPages,
     totalItems,
     filters,
-    fetchApps, 
-    fetchCategories, 
+    fetchApps,
+    fetchCategories,
     fetchTags,
     setFilters,
-    resetFilters 
+    resetFilters,
   } = useAppStore();
   const { initializeAuth } = useAuthStore();
 
@@ -38,7 +38,7 @@ export default function AppsPage() {
     fetchApps();
     fetchCategories();
     fetchTags();
-  }, []);
+  }, [initializeAuth, fetchApps, fetchCategories, fetchTags]);
 
   const handleSearch = (query: string) => {
     setFilters({ search: query });
@@ -48,16 +48,16 @@ export default function AppsPage() {
     resetFilters();
   };
 
-  const hasActiveFilters = 
-    filters.search || 
-    filters.categories.length > 0 || 
-    filters.tags.length > 0 || 
+  const hasActiveFilters =
+    filters.search ||
+    filters.categories.length > 0 ||
+    filters.tags.length > 0 ||
     filters.status.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -94,7 +94,10 @@ export default function AppsPage() {
               フィルター
               {hasActiveFilters && (
                 <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary-700 bg-primary-100 rounded-full">
-                  {filters.categories.length + filters.tags.length + filters.status.length + (filters.search ? 1 : 0)}
+                  {filters.categories.length +
+                    filters.tags.length +
+                    filters.status.length +
+                    (filters.search ? 1 : 0)}
                 </span>
               )}
             </button>
@@ -119,11 +122,11 @@ export default function AppsPage() {
         <div className="mb-6">
           <p className="text-sm text-gray-600">
             {isLoading ? (
-              '読み込み中...'
+              "読み込み中..."
             ) : (
               <>
                 {totalItems}件のアプリが見つかりました
-                {hasActiveFilters && ' (フィルター適用中)'}
+                {hasActiveFilters && " (フィルター適用中)"}
               </>
             )}
           </p>
@@ -159,7 +162,10 @@ export default function AppsPage() {
             {isLoading && (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 h-80 animate-pulse">
+                  <div
+                    key={i}
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 h-80 animate-pulse"
+                  >
                     <div className="p-6">
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
                       <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
@@ -187,7 +193,9 @@ export default function AppsPage() {
                 ) : (
                   <div className="text-center py-12">
                     <MagnifyingGlassIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">アプリが見つかりません</h3>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">
+                      アプリが見つかりません
+                    </h3>
                     <p className="mt-1 text-sm text-gray-500">
                       検索条件を変更して再度お試しください
                     </p>
@@ -219,7 +227,10 @@ export default function AppsPage() {
       {/* Mobile Filter Sidebar */}
       {isSidebarOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
-          <div className="fixed inset-0 bg-black bg-opacity-25" onClick={() => setIsSidebarOpen(false)} />
+          <div
+            className="fixed inset-0 bg-black bg-opacity-25"
+            onClick={() => setIsSidebarOpen(false)}
+          />
           <div className="relative flex flex-col w-full max-w-xs bg-white shadow-xl">
             <div className="flex items-center justify-between p-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">フィルター</h2>

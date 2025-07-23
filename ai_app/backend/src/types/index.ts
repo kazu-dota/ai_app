@@ -303,6 +303,29 @@ export interface UsageStatistics {
   }>;
 }
 
+// Ranking types
+export interface RankingItem {
+  id: number;
+  name: string;
+  description: string;
+  rank: number;
+  avg_rating?: number | null;
+  usage_count: number;
+  monthly_usage?: number;
+  weekly_usage?: number;
+  ranking_score?: number;
+  review_count?: number;
+  category?: Category;
+}
+
+export type RankingType = 'rating' | 'usage' | 'combined' | 'monthly' | 'weekly';
+
+export interface RankingQuery {
+  type: RankingType;
+  limit?: number;
+  offset?: number;
+}
+
 // Error types
 export interface AppError {
   statusCode: number;

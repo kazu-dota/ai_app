@@ -48,12 +48,14 @@ ai_app/
 ### インストール手順
 
 1. リポジトリのクローン
+
 ```bash
 git clone https://github.com/kazu-dota/ai_app.git
 cd ai_app
 ```
 
 2. 依存関係のインストール
+
 ```bash
 # フロントエンド
 cd frontend
@@ -65,12 +67,14 @@ npm install
 ```
 
 3. 環境変数の設定
+
 ```bash
 cp .env.example .env
 # .envファイルを編集して必要な設定を行う
 ```
 
 4. データベースの起動とマイグレーション
+
 ```bash
 # Dockerでデータベース起動
 docker-compose up -d postgres
@@ -81,6 +85,7 @@ npm run migrate
 ```
 
 5. アプリケーションの起動
+
 ```bash
 # バックエンド
 npm run dev
@@ -156,6 +161,7 @@ kubectl apply -f k8s/
 ## API仕様
 
 API仕様書は以下で確認できます：
+
 - 開発環境: http://localhost:3001/api/docs
 - Swagger UI: [API Documentation](docs/api.md)
 

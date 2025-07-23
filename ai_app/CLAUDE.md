@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+# Global Configuration
+常に日本語で返答してください
+適切な粒度で、githubへのコミット、プッシュを実行してください。
+t_wadaのテスト駆動の手法で開発してください。
+
+テスト駆動開発の定義は以下です。
+
+1. 網羅したいテストシナリオのリスト（テストリスト）を書く
+2. テストリストの中から「ひとつだけ」選び出し、実際に、具体的で、実行可能なテストコードに翻訳し、テストが失敗することを確認する
+3.プロダクトコードを変更し、いま書いたテスト（と、それまでに書いたすべてのテスト）を成功させる（その過程で気づいたことはテストリストに追加する）
+3. 必要に応じてリファクタリングを行い、実装の設計を改善する
+テストリストが空になるまでステップ2に戻って繰り返す
+
 ## Project Overview
 
 AI App Catalog is a full-stack TypeScript application for cataloging and managing AI applications within a company. The platform consists of a Next.js frontend and Node.js/Express backend with PostgreSQL database.

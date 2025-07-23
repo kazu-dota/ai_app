@@ -1,26 +1,32 @@
-import { create } from 'zustand';
-import { AIAppWithDetails, Category, Tag, FilterState, AppListQuery } from '@/types';
-import { getApps, getCategories, getTags } from '@/lib/api';
+import { create } from "zustand";
+import {
+  AIAppWithDetails,
+  Category,
+  Tag,
+  FilterState,
+  AppListQuery,
+} from "@/types";
+import { getApps, getCategories, getTags } from "@/lib/api";
 
 interface AppState {
   // Data
   apps: AIAppWithDetails[];
   categories: Category[];
   tags: Tag[];
-  
+
   // UI State
   isLoading: boolean;
   error: string | null;
-  
+
   // Pagination
   currentPage: number;
   totalPages: number;
   totalItems: number;
   pageSize: number;
-  
+
   // Filters
   filters: FilterState;
-  
+
   // Selected app (for details page)
   selectedApp: AIAppWithDetails | null;
 }
@@ -30,18 +36,18 @@ interface AppActions {
   fetchApps: (params?: AppListQuery) => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchTags: () => Promise<void>;
-  
+
   // Filters
   setFilters: (filters: Partial<FilterState>) => void;
   resetFilters: () => void;
-  
+
   // Pagination
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
-  
+
   // Selected app
   setSelectedApp: (app: AIAppWithDetails | null) => void;
-  
+
   // Utils
   clearError: () => void;
   refreshApps: () => Promise<void>;
@@ -53,9 +59,9 @@ const defaultFilters: FilterState = {
   categories: [],
   tags: [],
   status: [],
-  search: '',
-  sortBy: 'created_at',
-  sortOrder: 'desc',
+  search: "",
+  sortBy: "created_at",
+  sortOrder: "desc",
 };
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -75,7 +81,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // Actions
   fetchApps: async (params?: AppListQuery) => {
     set({ isLoading: true, error: null });
-    
+
     try {
       const state = get();
       const queryParams: AppListQuery = {
@@ -84,14 +90,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
         sort_by: state.filters.sortBy,
         order: state.filters.sortOrder,
         q: state.filters.search || undefined,
-        category_id: state.filters.categories.length > 0 ? state.filters.categories[0] : undefined,
+        category_id:
+          state.filters.categories.length > 0
+            ? state.filters.categories[0]
+            : undefined,
         tags: state.filters.tags.length > 0 ? state.filters.tags : undefined,
-        status: state.filters.status.length > 0 ? state.filters.status[0] : undefined,
+        status:
+          state.filters.status.length > 0 ? state.filters.status[0] : undefined,
         ...params,
       };
 
       const response = await getApps(queryParams);
-      
+
       set({
         apps: response.data,
         currentPage: response.pagination.page,
@@ -100,7 +110,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch apps';
+      const message =
+        error instanceof Error ? error.message : "Failed to fetch apps";
       set({
         apps: [],
         isLoading: false,
@@ -114,7 +125,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const categories = await getCategories();
       set({ categories });
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      console.error("Failed to fetch categories:", error);
     }
   },
 
@@ -123,7 +134,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       const tags = await getTags();
       set({ tags });
     } catch (error) {
-      console.error('Failed to fetch tags:', error);
+      console.error("Failed to fetch tags:", error);
     }
   },
 
@@ -132,7 +143,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       filters: { ...state.filters, ...newFilters },
       currentPage: 1, // Reset to first page when filters change
     }));
-    
+
     // Automatically refresh apps when filters change
     get().fetchApps();
   },
@@ -142,7 +153,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       filters: defaultFilters,
       currentPage: 1,
     });
-    
+
     get().fetchApps();
   },
 
@@ -156,7 +167,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
       pageSize: size,
       currentPage: 1, // Reset to first page when page size changes
     });
-    
+
     get().fetchApps();
   },
 
@@ -185,8 +196,22 @@ export const useAppFilters = () => {
 };
 
 export const usePagination = () => {
-  const { currentPage, totalPages, totalItems, pageSize, setPage, setPageSize } = useAppStore();
-  return { currentPage, totalPages, totalItems, pageSize, setPage, setPageSize };
+  const {
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    setPage,
+    setPageSize,
+  } = useAppStore();
+  return {
+    currentPage,
+    totalPages,
+    totalItems,
+    pageSize,
+    setPage,
+    setPageSize,
+  };
 };
 
 export const useCategories = () => {

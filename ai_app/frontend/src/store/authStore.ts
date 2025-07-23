@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { AuthUser, LoginRequest } from '@/types';
-import { apiClient } from '@/lib/api';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { AuthUser, LoginRequest } from "@/types";
+import { apiClient } from "@/lib/api";
 
 interface AuthState {
   user: AuthUser | null;
@@ -32,14 +32,14 @@ export const useAuthStore = create<AuthStore>()(
       // Actions
       login: async (credentials: LoginRequest) => {
         set({ isLoading: true, error: null });
-        
+
         try {
           const response = await apiClient.login(credentials);
           const { user, token } = response;
-          
+
           // Store token in API client
           apiClient.setToken(token);
-          
+
           set({
             user,
             isAuthenticated: true,
@@ -47,7 +47,8 @@ export const useAuthStore = create<AuthStore>()(
             error: null,
           });
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Login failed';
+          const message =
+            error instanceof Error ? error.message : "Login failed";
           set({
             user: null,
             isAuthenticated: false,
@@ -61,7 +62,7 @@ export const useAuthStore = create<AuthStore>()(
       logout: () => {
         // Clear API client auth
         apiClient.clearAuth();
-        
+
         set({
           user: null,
           isAuthenticated: false,
@@ -82,10 +83,10 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       initializeAuth: () => {
-        if (typeof window !== 'undefined') {
-          const token = localStorage.getItem('auth_token');
-          const userStr = localStorage.getItem('user');
-          
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("auth_token");
+          const userStr = localStorage.getItem("user");
+
           if (token && userStr) {
             try {
               const user = JSON.parse(userStr) as AuthUser;
@@ -96,30 +97,30 @@ export const useAuthStore = create<AuthStore>()(
               });
             } catch (error) {
               // Clear invalid stored data
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('user');
+              localStorage.removeItem("auth_token");
+              localStorage.removeItem("user");
             }
           }
         }
       },
     }),
     {
-      name: 'auth-store',
+      name: "auth-store",
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
         // Re-initialize API client with stored token
-        if (state?.user && typeof window !== 'undefined') {
-          const token = localStorage.getItem('auth_token');
+        if (state?.user && typeof window !== "undefined") {
+          const token = localStorage.getItem("auth_token");
           if (token) {
             apiClient.setToken(token);
           }
         }
       },
-    }
-  )
+    },
+  ),
 );
 
 // Selectors for convenience

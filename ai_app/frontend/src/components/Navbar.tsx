@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, Fragment } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Dialog, Disclosure, Popover, Transition } from '@headlessui/react';
+import { useState, Fragment } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Dialog, Disclosure, Popover, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
   XMarkIcon,
@@ -12,25 +12,25 @@ import {
   UserIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
-} from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import { useAuth, useAuthActions } from '@/store/authStore';
-import { SearchBar } from './SearchBar';
+} from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { useAuth, useAuthActions } from "@/store/authStore";
+import { SearchBar } from "./SearchBar";
 
 const navigation = [
-  { name: 'ホーム', href: '/' },
-  { name: 'アプリ一覧', href: '/apps' },
-  { name: 'カテゴリ', href: '/categories' },
-  { name: 'ランキング', href: '/ranking' },
+  { name: "ホーム", href: "/" },
+  { name: "アプリ一覧", href: "/apps" },
+  { name: "カテゴリ", href: "/categories" },
+  { name: "ランキング", href: "/ranking" },
 ];
 
 const userMenuItems = [
-  { name: 'プロフィール', href: '/profile', icon: UserIcon },
-  { name: '設定', href: '/settings', icon: Cog6ToothIcon },
+  { name: "プロフィール", href: "/profile", icon: UserIcon },
+  { name: "設定", href: "/settings", icon: Cog6ToothIcon },
 ];
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 export function Navbar() {
@@ -41,19 +41,24 @@ export function Navbar() {
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8" aria-label="Global">
+      <nav
+        className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8"
+        aria-label="Global"
+      >
         {/* Logo */}
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">AI App Catalog</span>
             <div className="flex items-center space-x-2">
               <SparklesIcon className="h-8 w-8 text-primary-600" />
-              <span className="text-xl font-bold text-gray-900">AI App Catalog</span>
+              <span className="text-xl font-bold text-gray-900">
+                AI App Catalog
+              </span>
             </div>
           </Link>
         </div>
@@ -101,12 +106,13 @@ export function Navbar() {
                 <SparklesIcon className="w-4 h-4 mr-2" />
                 アプリ登録
               </Link>
-              
+
               <Popover className="relative">
                 <Popover.Button className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 hover:text-primary-600">
                   <div className="flex items-center space-x-2">
                     <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
                       {user.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={user.avatar_url}
                           alt={user.name}
@@ -118,7 +124,10 @@ export function Navbar() {
                     </div>
                     <span className="hidden sm:block">{user.name}</span>
                   </div>
-                  <ChevronDownIcon className="h-5 w-5 flex-none text-gray-400" aria-hidden="true" />
+                  <ChevronDownIcon
+                    className="h-5 w-5 flex-none text-gray-400"
+                    aria-hidden="true"
+                  />
                 </Popover.Button>
 
                 <Transition
@@ -176,15 +185,26 @@ export function Navbar() {
       </nav>
 
       {/* Mobile menu */}
-      <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+      <Dialog
+        as="div"
+        className="lg:hidden"
+        open={mobileMenuOpen}
+        onClose={setMobileMenuOpen}
+      >
         <div className="fixed inset-0 z-10" />
         <Dialog.Panel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <Link href="/" className="-m-1.5 p-1.5" onClick={() => setMobileMenuOpen(false)}>
+            <Link
+              href="/"
+              className="-m-1.5 p-1.5"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               <span className="sr-only">AI App Catalog</span>
               <div className="flex items-center space-x-2">
                 <SparklesIcon className="h-8 w-8 text-primary-600" />
-                <span className="text-xl font-bold text-gray-900">AI App Catalog</span>
+                <span className="text-xl font-bold text-gray-900">
+                  AI App Catalog
+                </span>
               </div>
             </Link>
             <button
@@ -224,6 +244,7 @@ export function Navbar() {
                     <div className="flex items-center space-x-3 px-3 py-2">
                       <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
                         {user.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={user.avatar_url}
                             alt={user.name}
@@ -234,11 +255,13 @@ export function Navbar() {
                         )}
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-gray-900">{user.name}</p>
+                        <p className="text-base font-semibold text-gray-900">
+                          {user.name}
+                        </p>
                         <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
                     </div>
-                    
+
                     <Link
                       href="/apps/new"
                       className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-white bg-primary-600 hover:bg-primary-700"
@@ -263,7 +286,7 @@ export function Navbar() {
                         </div>
                       </Link>
                     ))}
-                    
+
                     <button
                       onClick={() => {
                         handleLogout();

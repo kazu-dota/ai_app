@@ -8,6 +8,7 @@ import {
   ReviewWithUser,
   AppStatus,
   CategoryType,
+  RankingItem,
 } from '@/types';
 import { query } from '@/config/database';
 
@@ -264,6 +265,132 @@ export class AIAppModel extends BaseModel {
       LIMIT $2
     `;
     return await query<AIApp>(queryText, [searchTerm, limit]);
+  }
+
+  // ランキング機能のメソッド
+  async getRankingByRating(limit = 10): Promise<RankingItem[]> {
+    const queryText = `
+      SELECT 
+        id, name, description, avg_rating, usage_count, rank,
+        (SELECT COUNT(*) FROM reviews WHERE app_id = ranking_by_rating.id) as review_count
+      FROM ranking_by_rating
+      LIMIT $1
+    `;
+    const result = await query<{
+      id: number;
+      name: string;
+      description: string;
+      avg_rating: number | null;
+      usage_count: number;
+      rank: number;
+      review_count: number;
+    }>(queryText, [limit]);
+    return result.map(row => this.mapToRankingItem(row));
+  }
+
+  async getRankingByUsage(limit = 10): Promise<RankingItem[]> {
+    const queryText = `
+      SELECT id, name, description, usage_count, avg_rating, rank
+      FROM ranking_by_usage
+      LIMIT $1
+    `;
+    const result = await query<{
+      id: number;
+      name: string;
+      description: string;
+      usage_count: number;
+      avg_rating: number | null;
+      rank: number;
+    }>(queryText, [limit]);
+    return result.map(row => this.mapToRankingItem(row));
+  }
+
+  async getRankingCombined(limit = 10): Promise<RankingItem[]> {
+    const queryText = `
+      SELECT id, name, description, avg_rating, usage_count, ranking_score, rank
+      FROM ranking_combined  
+      LIMIT $1
+    `;
+    const result = await query<{
+      id: number;
+      name: string;
+      description: string;
+      avg_rating: number | null;
+      usage_count: number;
+      ranking_score: number;
+      rank: number;
+    }>(queryText, [limit]);
+    return result.map(row => this.mapToRankingItem(row));
+  }
+
+  async getRankingMonthly(limit = 10): Promise<RankingItem[]> {
+    const queryText = `
+      SELECT id, name, description, monthly_usage, avg_rating, rank
+      FROM ranking_monthly
+      LIMIT $1
+    `;
+    const result = await query<{
+      id: number;
+      name: string;
+      description: string;
+      monthly_usage: number;
+      avg_rating: number | null;
+      rank: number;
+    }>(queryText, [limit]);
+    return result.map(row => ({
+      ...this.mapToRankingItem(row),
+      monthly_usage: row.monthly_usage,
+    }));
+  }
+
+  async getRankingWeekly(limit = 10): Promise<RankingItem[]> {
+    const queryText = `
+      SELECT id, name, description, weekly_usage, avg_rating, rank  
+      FROM ranking_weekly
+      LIMIT $1
+    `;
+    const result = await query<{
+      id: number;
+      name: string;
+      description: string;
+      weekly_usage: number;
+      avg_rating: number | null;
+      rank: number;
+    }>(queryText, [limit]);
+    return result.map(row => ({
+      ...this.mapToRankingItem(row),
+      weekly_usage: row.weekly_usage,
+    }));
+  }
+
+  async updateRankings(): Promise<void> {
+    await query('SELECT update_app_rankings()');
+  }
+
+  private mapToRankingItem(row: {
+    id: number;
+    name: string;
+    description: string;
+    rank: number;
+    avg_rating?: number | null;
+    usage_count?: number;
+    monthly_usage?: number;
+    weekly_usage?: number;
+    ranking_score?: number;
+    review_count?: number;
+  }): RankingItem {
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      rank: row.rank,
+      avg_rating: row.avg_rating ? parseFloat(row.avg_rating.toString()) : null,
+      usage_count: row.usage_count ?? 0,
+      monthly_usage: row.monthly_usage ?? 0,
+      weekly_usage: row.weekly_usage ?? 0,
+      ranking_score: row.ranking_score ? parseFloat(row.ranking_score.toString()) : 0,
+      review_count: row.review_count ?? 0,
+    };
   }
 
   private mapToAppWithDetails(row: DatabaseRow): AIAppWithDetails {

@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useAppStore } from '@/store/appStore';
-import { searchApps } from '@/lib/api';
-import { AIApp } from '@/types';
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { useAppStore } from "@/store/appStore";
+import { searchApps } from "@/lib/api";
+import { AIApp } from "@/types";
 
 interface SearchBarProps {
   placeholder?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   onSearch?: (query: string) => void;
   className?: string;
 }
 
-export function SearchBar({ 
-  placeholder = 'アプリを検索...', 
-  size = 'md',
+export function SearchBar({
+  placeholder = "アプリを検索...",
+  size = "md",
   onSearch,
-  className = '' 
+  className = "",
 }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<AIApp[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,9 +29,9 @@ export function SearchBar({
   const { setFilters } = useAppStore();
 
   const sizeClasses = {
-    sm: 'h-8 text-sm',
-    md: 'h-10 text-base',
-    lg: 'h-12 text-lg',
+    sm: "h-8 text-sm",
+    md: "h-10 text-base",
+    lg: "h-12 text-lg",
   };
 
   // Debounced search for suggestions
@@ -60,13 +60,16 @@ export function SearchBar({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
+      if (
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = (searchQuery?: string) => {
@@ -77,7 +80,7 @@ export function SearchBar({
       } else {
         // Navigate to apps page with search query
         setFilters({ search: finalQuery.trim() });
-        router.push('/apps');
+        router.push("/apps");
       }
       setIsOpen(false);
       inputRef.current?.blur();
@@ -92,11 +95,11 @@ export function SearchBar({
   const handleSuggestionClick = (app: AIApp) => {
     router.push(`/apps/${app.id}`);
     setIsOpen(false);
-    setQuery('');
+    setQuery("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       setIsOpen(false);
       inputRef.current?.blur();
     }
@@ -106,7 +109,10 @@ export function SearchBar({
     <div className={`relative ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <MagnifyingGlassIcon
+            className="h-5 w-5 text-gray-400"
+            aria-hidden="true"
+          />
         </div>
         <input
           ref={inputRef}

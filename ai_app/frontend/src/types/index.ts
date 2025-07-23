@@ -10,7 +10,7 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = 'user' | 'admin' | 'super_admin';
+export type UserRole = "user" | "admin" | "super_admin";
 
 // Category related types
 export interface Category {
@@ -23,7 +23,7 @@ export interface Category {
   updated_at: string;
 }
 
-export type CategoryType = 'business' | 'target' | 'difficulty';
+export type CategoryType = "business" | "target" | "difficulty";
 
 // AI App related types
 export interface AIApp {
@@ -48,7 +48,13 @@ export interface AIApp {
   updated_at: string;
 }
 
-export type AppStatus = 'development' | 'testing' | 'active' | 'maintenance' | 'deprecated' | 'archived';
+export type AppStatus =
+  | "development"
+  | "testing"
+  | "active"
+  | "maintenance"
+  | "deprecated"
+  | "archived";
 
 export interface AIAppWithDetails extends AIApp {
   category?: Category;
@@ -102,7 +108,7 @@ export interface UsageLog {
   created_at: string;
 }
 
-export type ActionType = 'view' | 'use' | 'download';
+export type ActionType = "view" | "use" | "download";
 
 // Notification related types
 export interface Notification {
@@ -116,7 +122,11 @@ export interface Notification {
   created_at: string;
 }
 
-export type NotificationType = 'new_app' | 'app_update' | 'maintenance' | 'recommendation';
+export type NotificationType =
+  | "new_app"
+  | "app_update"
+  | "maintenance"
+  | "recommendation";
 
 // API Response types
 export interface ApiResponse<T = any> {
@@ -146,7 +156,7 @@ export interface PaginationQuery {
 
 export interface SortQuery {
   sort_by?: string;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
 }
 
 export interface SearchQuery {
@@ -161,7 +171,11 @@ export interface FilterQuery {
   tags?: number[];
 }
 
-export interface AppListQuery extends PaginationQuery, SortQuery, SearchQuery, FilterQuery {}
+export interface AppListQuery
+  extends PaginationQuery,
+    SortQuery,
+    SearchQuery,
+    FilterQuery {}
 
 // Authentication types
 export interface AuthUser {
@@ -169,6 +183,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: UserRole;
+  avatar_url?: string;
 }
 
 export interface LoginRequest {
@@ -216,7 +231,7 @@ export interface FilterState {
   status: AppStatus[];
   search: string;
   sortBy: string;
-  sortOrder: 'asc' | 'desc';
+  sortOrder: "asc" | "desc";
 }
 
 // Statistics types
@@ -230,8 +245,16 @@ export interface AppStatistics {
 
 export interface UsageStatistics {
   daily_usage: Array<{ date: string; count: number }>;
-  popular_apps: Array<{ app_id: number; app_name: string; usage_count: number }>;
-  top_rated_apps: Array<{ app_id: number; app_name: string; avg_rating: number }>;
+  popular_apps: Array<{
+    app_id: number;
+    app_name: string;
+    usage_count: number;
+  }>;
+  top_rated_apps: Array<{
+    app_id: number;
+    app_name: string;
+    avg_rating: number;
+  }>;
 }
 
 // Component Props types
@@ -241,12 +264,12 @@ export interface BaseProps {
 }
 
 export interface ButtonProps extends BaseProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  size?: "sm" | "md" | "lg";
   disabled?: boolean;
   loading?: boolean;
   onClick?: () => void;
-  type?: 'button' | 'submit' | 'reset';
+  type?: "button" | "submit" | "reset";
 }
 
 export interface InputProps extends BaseProps {
@@ -257,6 +280,28 @@ export interface InputProps extends BaseProps {
   error?: string;
   disabled?: boolean;
   required?: boolean;
+}
+
+// Ranking types
+export interface RankingItem {
+  id: number;
+  name: string;
+  description: string;
+  rank: number;
+  avg_rating?: number | null;
+  usage_count: number;
+  monthly_usage?: number;
+  weekly_usage?: number;
+  ranking_score?: number;
+  review_count?: number;
+  category?: Category;
+}
+
+export type RankingType = 'rating' | 'usage' | 'combined' | 'monthly' | 'weekly';
+
+export interface RankingQuery {
+  type?: RankingType;
+  limit?: number;
 }
 
 // Error types
