@@ -1,8 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { body, query, param } from 'express-validator';
 import { AIAppController } from '@/controllers/AIAppController';
-import { authenticateToken, optionalAuth } from '@/middleware/auth';
-import { requireRole } from '@/middleware/roleAuth';
 import { rateLimiter } from '@/middleware/rateLimiter';
 
 // Async handler wrapper for Express routes
@@ -343,7 +341,6 @@ router.get(
  */
 router.get(
   '/',
-  optionalAuth,
   rateLimiter,
   listAppsValidation,
   asyncHandler(aiAppController.getApps.bind(aiAppController))
@@ -389,7 +386,6 @@ router.get(
  */
 router.get(
   '/:id',
-  optionalAuth,
   rateLimiter,
   idParamValidation,
   asyncHandler(aiAppController.getAppById.bind(aiAppController))
@@ -398,8 +394,6 @@ router.get(
 // Protected routes (authentication required)
 router.post(
   '/',
-  authenticateToken,
-  requireRole(['user', 'admin', 'super_admin']),
   rateLimiter,
   createAppValidation,
   asyncHandler(aiAppController.createApp.bind(aiAppController))
@@ -407,8 +401,6 @@ router.post(
 
 router.put(
   '/:id',
-  authenticateToken,
-  requireRole(['user', 'admin', 'super_admin']),
   rateLimiter,
   idParamValidation,
   updateAppValidation,
@@ -417,8 +409,6 @@ router.put(
 
 router.delete(
   '/:id',
-  authenticateToken,
-  requireRole(['user', 'admin', 'super_admin']),
   rateLimiter,
   idParamValidation,
   asyncHandler(aiAppController.deleteApp.bind(aiAppController))
@@ -427,8 +417,6 @@ router.delete(
 // Tag management (admin+ required)
 router.post(
   '/:id/tags/:tagId',
-  authenticateToken,
-  requireRole(['admin', 'super_admin']),
   rateLimiter,
   tagIdParamValidation,
   asyncHandler(aiAppController.addTagToApp.bind(aiAppController))
@@ -436,8 +424,6 @@ router.post(
 
 router.delete(
   '/:id/tags/:tagId',
-  authenticateToken,
-  requireRole(['admin', 'super_admin']),
   rateLimiter,
   tagIdParamValidation,
   asyncHandler(aiAppController.removeTagFromApp.bind(aiAppController))
