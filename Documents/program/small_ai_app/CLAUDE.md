@@ -75,12 +75,12 @@ docker-compose up -d
 
 ## 簡素化された機能範囲
 
-### 核心機能（MVP）
-1. **アプリ一覧・詳細表示**
-2. **基本検索・カテゴリフィルタ**
-3. **お気に入り機能**
-4. **簡単な評価システム（星評価のみ）**
-5. **基本的なユーザー管理**
+### 核心機能（MVP）- **2025年1月更新**
+1. **✅ アプリ一覧・詳細表示** - 実装完了
+2. **✅ 基本検索・カテゴリフィルタ** - 実装完了（デバウンス、リアルタイム検索）
+3. **✅ お気に入り機能** - 実装完了（フロントエンド、ローカルストレージ）
+4. **🔄 簡単な評価システム（星評価のみ）** - バックエンドのみ実装済み
+5. **🔄 基本的なユーザー管理** - バックエンドのみ実装済み
 
 ### 削除された機能
 - 複雑な権限管理（super_admin削除）
@@ -94,20 +94,21 @@ docker-compose up -d
 
 ## Key Architecture Patterns
 
-### Frontend Structure (React)
+### Frontend Structure (React) - **2025年1月更新**
 
 ```
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── common/          # Header, Footer, LoadingSpinner
-│   │   ├── apps/            # AppCard, AppList, AppDetail, AppSearch
-│   │   └── favorites/       # FavoriteButton
-│   ├── pages/               # HomePage, AppsPage, AppDetailPage
-│   ├── hooks/               # useAuth, useApps, useFavorites
+│   │   ├── common/          # Header, Footer, LoadingSpinner, ErrorMessage
+│   │   ├── apps/            # AppCard（リニューアル）, AppList（Grid対応）, AppSearch（新規）
+│   │   └── favorites/       # （統合済み - AppCardに組み込み）
+│   ├── pages/               # HomePage（ロゴ調整）, AppsPage（検索統合）
+│   ├── hooks/               # useAppSearch（新規）, useFavorites（新規）
+│   ├── utils/               # debounce.js（新規）
 │   ├── services/            # api.js
-│   ├── context/             # AuthContext
-│   └── utils/               # constants.js
+│   ├── context/             # （認証削除）
+│   └── test/                # setup.js, テストファイル群
 ```
 
 ### Backend Structure (FastAPI)
@@ -180,14 +181,14 @@ bcrypt==4.1.2
 ```
 
 ```json
-# frontend/package.json dependencies
+# frontend/package.json dependencies - 2025年1月更新
 {
-  "react": "^18.2.0",
-  "react-dom": "^18.2.0",
-  "react-router-dom": "^6.8.0",
-  "axios": "^1.6.0",
-  "tailwindcss": "^3.3.0",
-  "@heroicons/react": "^2.0.18"
+  "react": "^19.1.0",
+  "react-dom": "^19.1.0", 
+  "react-router-dom": "^7.7.0",
+  "axios": "^1.11.0",
+  "tailwindcss": "^3.4.17",
+  "@heroicons/react": "^2.2.0"
 }
 ```
 
