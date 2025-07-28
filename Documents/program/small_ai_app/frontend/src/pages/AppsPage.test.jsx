@@ -1,14 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import AppsPage from './AppsPage'
-import { appsAPI } from '../services/api'
 
-// APIをモック化
-vi.mock('../services/api', () => ({
-  appsAPI: {
-    getApps: vi.fn(),
-  },
-}))
+// fetchをモック化
+global.fetch = vi.fn()
 
 const mockApps = [
   {
@@ -33,11 +28,14 @@ const mockApps = [
 
 describe('AppsPage', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    fetch.mockClear()
   })
 
   it('ページタイトル「AIアプリ一覧」が表示される', async () => {
-    appsAPI.getApps.mockResolvedValue({ data: mockApps })
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockApps,
+    })
     
     render(<AppsPage />)
     
@@ -47,7 +45,7 @@ describe('AppsPage', () => {
   })
 
   it('ローディング中にLoadingSpinnerが表示される', () => {
-    appsAPI.getApps.mockImplementation(() => new Promise(() => {})) // 永続的にpending状態
+    fetch.mockImplementation(() => new Promise(() => {})) // 永続的にpending状態
     
     render(<AppsPage />)
     
@@ -55,7 +53,10 @@ describe('AppsPage', () => {
   })
 
   it('アプリ一覧が正しく表示される', async () => {
-    appsAPI.getApps.mockResolvedValue({ data: mockApps })
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockApps,
+    })
     
     render(<AppsPage />)
     
@@ -66,7 +67,7 @@ describe('AppsPage', () => {
   })
 
   it('APIエラー時にエラーメッセージが表示される', async () => {
-    appsAPI.getApps.mockRejectedValue(new Error('API Error'))
+    fetch.mockRejectedValueOnce(new Error('API Error'))
     
     render(<AppsPage />)
     

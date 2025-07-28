@@ -1,74 +1,39 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
-  const { user, logout, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-14">
           {/* ロゴ */}
           <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-gray-900">
+            <Link to="/" className="text-base sm:text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors duration-200">
               AI App Catalog
             </Link>
           </div>
 
           {/* ナビゲーション */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 md:gap-8">
             <Link
               to="/"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 hover:bg-blue-50"
             >
               ホーム
             </Link>
             <Link
               to="/apps"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 hover:bg-blue-50"
             >
               アプリ一覧
             </Link>
-            {isAuthenticated && (
-              <Link
-                to="/favorites"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                お気に入り
-              </Link>
-            )}
+            <Link
+              to="/favorites"
+              className="text-gray-600 hover:text-blue-600 px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition-all duration-200 hover:bg-blue-50"
+            >
+              お気に入り
+            </Link>
           </nav>
-
-          {/* ユーザーメニュー */}
-          <div className="flex items-center space-x-4">
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
-                  こんにちは、{user.name}さん
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  ログアウト
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                ログイン
-              </Link>
-            )}
-          </div>
         </div>
       </div>
     </header>
