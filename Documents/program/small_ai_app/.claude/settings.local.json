@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(python -m pytest tests/test_main.py -v)",
+      "Bash(python -m pytest tests/test_database.py -v)",
+      "Bash(python -m pytest tests/test_auth.py -v)",
+      "Bash(pip install:*)",
+      "Bash(python -m pytest tests/test_auth.py::test_login_endpoint_invalid_credentials -v)",
+      "Bash(npm create:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(python -m pytest tests/test_apps_api.py::test_create_category_as_admin -v)",
+      "Bash(python -m pytest tests/test_apps_api.py -v)",
+      "Bash(npm test:*)"
+    ],
+    "deny": []
+  }
+}
